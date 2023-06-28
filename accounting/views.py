@@ -12,8 +12,9 @@ from organization.models import Organization
 from rest_framework.response import Response
 from accounting.utils import calculate_depreciation
 from rest_framework.decorators import api_view
+from user.permission import IsAdminOrAccountingMixin
 
-class AccountChartMixin:
+class AccountChartMixin(IsAdminOrAccountingMixin):
     model = AccountChart
     form_class = AccountChartForm
     paginate_by = 10
@@ -63,7 +64,7 @@ class AccountChartDelete(AccountChartMixin, DeleteMixin, View):
 
 from .models import AccountLedger
 from .forms import AccountLedgerForm
-class AccountLedgerMixin:
+class AccountLedgerMixin(IsAdminOrAccountingMixin):
     model = AccountLedger
     form_class = AccountLedgerForm
     paginate_by = 10
@@ -88,14 +89,14 @@ class AccountLedgerDelete(AccountChartMixin, DeleteMixin, View):
 
 
 from .forms import AccountSubLedgerForm
-class AccountSubLedgerCreate(CreateView):
+class AccountSubLedgerCreate(IsAdminOrAccountingMixin, CreateView):
     template_name = "accounting/subledger/create.html"
     form_class = AccountSubLedgerForm
     success_url = reverse_lazy('accountchart_list')
 
 from .models import Expense
 from .forms import ExpenseForm
-class ExpenseMixin:
+class ExpenseMixin(IsAdminOrAccountingMixin):
     model = Expense
     form_class = ExpenseForm
     paginate_by = 10
@@ -121,7 +122,7 @@ class ExpenseDelete(ExpenseMixin, DeleteMixin, View):
 
 from .models import TblDrJournalEntry, TblCrJournalEntry, TblJournalEntry, AccountSubLedger
 
-class JournalEntryCreateView(View):
+class JournalEntryCreateView(IsAdminOrAccountingMixin, View):
 
     def get(self, request):
         ledgers = AccountLedger.objects.all()
@@ -217,7 +218,7 @@ class JournalEntryCreateView(View):
         return redirect('journal_list')
 
 
-class JournalEntryView(View):
+class JournalEntryView(IsAdminOrAccountingMixin, View):
 
     def get(self, request, pk=None):
         from_date = request.GET.get('fromDate', None)
@@ -276,7 +277,7 @@ class JournalEntryView(View):
         return render(request, 'accounting/journal/journal_list.html',  {'journal_entries': journal_entries})
 
 
-class TrialBalanceView(View):
+class TrialBalanceView(IsAdminOrAccountingMixin, View):
 
     def filtered_view(self, from_date, to_date):
         filtered_transactions = CumulativeLedger.objects.filter(created_at__range=[from_date, to_date])
@@ -529,7 +530,7 @@ class TrialBalanceView(View):
         return render(request, 'accounting/trial_balance.html', context)
 
 
-class ProfitAndLoss(TemplateView):
+class ProfitAndLoss(IsAdminOrAccountingMixin, TemplateView):
     template_name = "accounting/profit_and_loss.html"
 
     def get_context_data(self, **kwargs):
@@ -565,7 +566,7 @@ class ProfitAndLoss(TemplateView):
         return context
     
 
-class BalanceSheet(TemplateView):
+class BalanceSheet(IsAdminOrAccountingMixin, TemplateView):
     template_name = "accounting/balance_sheet.html"
 
     def get_context_data(self, **kwargs):
@@ -613,7 +614,7 @@ class BalanceSheet(TemplateView):
         return context
 
 
-class DepreciationView(View):
+class DepreciationView(IsAdminOrAccountingMixin, View):
 
     def get(self, request):
         depreciations = Depreciation.objects.all()

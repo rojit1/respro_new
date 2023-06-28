@@ -165,7 +165,9 @@ class CustomerProductAPI(ModelViewSet):
 
 
 class BranchStockTrackingView(APIView):
-
+    """
+    Useless view
+    """
     def post(self, request):
         serializer = ProductReconcileSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -221,7 +223,10 @@ class ApiItemReconcilationView(APIView):
                                      )
         report_total = serializer.validated_data.get("report_total")
         new_data = {'branch_id':serializer.validated_data.get('branch'),'terminal':serializer.validated_data.get('terminal'), **report_total}
-        EndDayDailyReport.objects.create(**new_data)
+        try:
+            EndDayDailyReport.objects.create(**new_data)
+        except Exception as e:
+            print(e)
         return Response({'details':'success'}, 201)
 
 

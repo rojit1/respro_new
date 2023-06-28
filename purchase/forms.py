@@ -21,7 +21,7 @@ class ProductPurchaseForm(BaseForm, forms.ModelForm):
         (50, 50),
 
     )
-    bill_date = forms.DateField(required=False)
+    bill_date = forms.DateField(required=True)
     bill_no = forms.CharField(required=False, empty_value=None)
     pp_no = forms.CharField(required=False, empty_value=None)
 
@@ -78,6 +78,8 @@ class ProductPurchaseForm(BaseForm, forms.ModelForm):
         }
 
         self.fields['product'].widget.queryset = Product.objects.filter(is_produced=False)
+        self.fields['bill_date'].widget.attrs["required"] = True
+
 
 
     def clean_product(self):

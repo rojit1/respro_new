@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
 from root.forms import BaseForm  # optional
-
+from django.contrib.auth.models import Group
 
 User = get_user_model()
 
@@ -17,6 +17,7 @@ class UserCreateForm(BaseForm, UserCreationForm):
 
 class AdminForm(BaseForm, UserCreationForm):
     # password1 = None  # Standard django password input
+    user_type = forms.ModelMultipleChoiceField(queryset=Group.objects.all())
 
     class Meta:
         model = User

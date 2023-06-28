@@ -29,7 +29,7 @@ class UserMixin(IsAdminMixin):
 
 class UserList(UserMixin, ListView):
     template_name = "user/user_list.html"
-    queryset = User.objects.filter(is_superuser=True, status=True, is_deleted=False)
+    queryset = User.objects.filter(status=True, is_deleted=False).exclude(groups__name__in=['agent'])
 
     def get_queryset(self, *args, **kwargs):
         queryset = self.queryset.exclude(id=self.request.user.id)
@@ -44,15 +44,11 @@ class UserCreate(UserMixin, CreateView):
     template_name = "create.html"
 
     def form_valid(self, form):
-        form.instance.is_superuser = True
-        form.instance.is_staff = True
-        form.instance.organization = self.request.user.organization
-
+        user_groups = form.cleaned_data.get('user_type')
         object = form.save()
-        group = Group.objects.get(name="admin")
-        object.groups.add(group)
+        for group in user_groups:
+            object.groups.add(group)
         return super().form_valid(form)
-
 
 class UserAdmin(UserMixin, CreateView):
     template_name = "create.html"
@@ -60,6 +56,15 @@ class UserAdmin(UserMixin, CreateView):
 
 class UserUpdate(UserMixin, UpdateView):
     template_name = "update.html"
+
+    def form_valid(self, form):
+        user_groups = form.cleaned_data.get('user_type')
+        object = form.save()
+        for g in Group.objects.all():
+            object.groups.remove(g)
+        for group in user_groups:
+            object.groups.add(group)
+        return super().form_valid(form)
 
 
 class UserDelete(UserMixin, View):

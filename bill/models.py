@@ -91,9 +91,11 @@ class TablReturnEntry(models.Model):
     exportNumber = models.CharField(default="0", max_length=20)
     exportDate = models.CharField(default="0", max_length=20)
     unit = models.CharField(default="-", max_length=20)
+    fiscal_year = models.CharField(max_length=10, null=True)
 
     class Meta:
         db_table = "tblreturnentry"
+        unique_together = 'bill_no', 'fiscal_year'
 
     def __str__(self):
         return f"{self.idtblreturnEntry}- {self.bill_date} - {self.bill_no}"
@@ -209,6 +211,10 @@ def create_invoice_number(sender, instance, created, **kwargs):
     current_fiscal_year = Organization.objects.last().current_fiscal_year
 
     if created and instance.payment_mode.lower().strip() == "complimentary":
+        instance.tax_amount = 0
+        instance.taxable_amount = 0
+        instance.discount_amount = 0
+        instance.save()
         try:
             create_journal_for_complimentary(instance)
         except Exception as e:

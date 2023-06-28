@@ -1,7 +1,15 @@
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.urls import reverse_lazy
+"""
+Standard Group names
 
+admin
+agent
+Accounting
+Store Keeper
+
+"""
 
 class CheckPermissionMixin(object):
     perm_group = [
@@ -13,7 +21,6 @@ class CheckPermissionMixin(object):
             if request.user.groups.filter(name__in=self.perm_group).exists():
                 return super().dispatch(request, *args, **kwargs)
         return redirect(reverse_lazy("user:login_view"))
-
 
 class SearchMixin:
     search_lookup_fields = []
@@ -34,9 +41,11 @@ class SearchMixin:
         return qc
 
     def date_range_filter(self, qc):
+        
         if self.request.GET.get("fromDate") and self.request.GET.get("toDate"):
             created_at_date = self.request.GET.get("fromDate")
             created_to_date = self.request.GET.get("toDate")
+            print(qc.filter(created_at__range=[created_at_date, created_to_date]))
             return qc.filter(created_at__range=[created_at_date, created_to_date])
         return qc
 
@@ -92,3 +101,30 @@ class IsAccountantMixin(BillFilterMixin, object):
             if request.user.groups.filter(name="admin").exists():
                 return super().dispatch(request, *args, **kwargs)
         return redirect(reverse_lazy("user:login_view"))
+
+
+class IsAdminOrAccountingMixin(SearchMixin):
+    perm_group = [
+        "admin",
+        "Accounting"
+    ]
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if request.user.groups.filter(name__in=self.perm_group).exists():
+                return super().dispatch(request, *args, **kwargs)
+        return redirect(reverse_lazy("user:login_view"))
+    
+class IsAdminAccountingOrStoreKeeperMixin(SearchMixin):
+    perm_group = [
+        "admin",
+        "Accounting",
+        "Store Keeper"
+    ]
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            if request.user.groups.filter(name__in=self.perm_group).exists():
+                return super().dispatch(request, *args, **kwargs)
+        return redirect(reverse_lazy("user:login_view"))
+

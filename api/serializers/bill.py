@@ -84,7 +84,7 @@ class BillSerializer(ModelSerializer):
 
         
         bill = Bill.objects.create(
-            **validated_data, organization=Organization.objects.last(), bill_count_number=bill_count_no
+            **validated_data, organization=Organization.objects.last(), bill_count_number=bill_count_no, print_count=3
         )
         if split_payment and payment_mode.lower() == "split":
             branch = invoice_no.split('-')[0]
@@ -140,15 +140,10 @@ class TblTaxEntrySerializer(ModelSerializer):
     def update(self, instance, validated_data):
         is_active_data = validated_data.get("is_active")
         reason = validated_data.get("reason")
-        print("/n/n")
-        print(instance.bill_no)
-        print(instance.customer_pan)
-
         if is_active_data == "no":
             miti = ""
             quantity = 1
             try:
-                print("TRY VITRA XU MA\n\n")
                 obj = TblSalesEntry.objects.get(
                     bill_no=instance.bill_no, customer_pan=instance.customer_pan
                 )
@@ -160,9 +155,6 @@ class TblTaxEntrySerializer(ModelSerializer):
                 )
                 obj.status = False
                 obj.save()
-                # obj.save()
-
-                print(obj)
                 miti = obj.transaction_miti
                 quantity = obj.bill_items.count()
 
@@ -184,8 +176,8 @@ class TblTaxEntrySerializer(ModelSerializer):
                 print(return_entry)
                 return_entry.save()
 
-            except:
-                print("exception")
+            except Exception as e:
+                print(e)
         instance.save()
 
         return super().update(instance, validated_data)

@@ -1,8 +1,8 @@
 
 {%extends 'base.html'%}
 {% block pagetitle %}MailRecipient List {% endblock %}
-{% block home %} {% url 'mailrecipient_list' %} {% endblock %}
-{% block title %}MailRecipient List {% endblock %}
+
+{% block title %}End Day Report {% endblock %}
 {% block content %}
     <div class="card">
 
@@ -27,6 +27,9 @@
                 </div>
               </th>
               <th class="min-w-125px sorting" tabindex="0" >Datetime</th>
+              <th class="min-w-125px sorting" tabindex="0" >Total Sale</th>
+              <th class="min-w-125px sorting" tabindex="0" >Net sale</th>
+              <th class="min-w-125px sorting" tabindex="0" >Tax</th>
               <th class="min-w-125px sorting" tabindex="0" >Employee Name</th>
               <th class="min-w-125px sorting" tabindex="0" >Cash</th>
               <th class="min-w-125px sorting" tabindex="0" >Credit</th>
@@ -50,12 +53,15 @@
                 </td>
 
                 <td>{{object.date_time}}</td>
+                <td>{{object.total_sale|floatformat:2}}</td>
+                <td>{{object.net_sales|floatformat:2}}</td>
+                <td>{{object.vat|floatformat:2}}</td>
                 <td>{{object.employee_name}}</td>
-                <td>{{object.cash}}</td>
-                <td>{{object.credit}}</td>
-                <td>{{object.credit_card}}</td>
-                <td>{{object.mobile_payment}}</td>
-                <td>{{object.complimentary}}</td>
+                <td>{{object.cash|floatformat:2}}</td>
+                <td>{{object.credit|floatformat:2}}</td>
+                <td>{{object.credit_card|floatformat:2}}</td>
+                <td>{{object.mobile_payment|floatformat:2}}</td>
+                <td>{{object.complimentary|floatformat:2}}</td>
                 <td>{{object.start_bill}}</td>
                 <td>{{object.end_bill}}</td>
 

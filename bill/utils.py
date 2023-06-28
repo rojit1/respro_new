@@ -91,7 +91,7 @@ def create_journal_for_bill(instance):
         update_terminal_sub_ledger(terminal=instance.terminal, branch=instance.branch.branch_code, total=grand_total, ledger=card_transaction_ledger)
         TblDrJournalEntry.objects.create(journal_entry=journal_entry, particulars=f"Card Transaction A/C Dr", ledger=card_transaction_ledger, debit_amount=grand_total)
         TblCrJournalEntry.objects.create(journal_entry=journal_entry, particulars=f"To Sales", ledger=sale_ledger, credit_amount=(grand_total-tax_amount))
-        card_transaction_ledger.total_value += (grand_total-tax_amount)
+        card_transaction_ledger.total_value += grand_total
         card_transaction_ledger.save()
 
 
@@ -127,10 +127,10 @@ def create_split_payment_accounting(payment, total, branch, terminal, tax_amount
     journal = TblJournalEntry.objects.create(employee_name='Created Automatically during Sale', journal_total=total)
     TblCrJournalEntry.objects.create(journal_entry=journal, particulars=f"To Sales", ledger=sale_ledger, credit_amount=(total-tax_amount))
     if tax_amount > 0:
-            vat_payable = AccountLedger.objects.get(ledger_name='VAT Payable')
-            vat_payable.total_value = vat_payable.total_value + Decimal(tax_amount)
-            vat_payable.save()
-            TblCrJournalEntry.objects.create(journal_entry=journal, particulars=f"To VAT Payable", ledger=vat_payable, credit_amount=tax_amount)
+        vat_payable = AccountLedger.objects.get(ledger_name='VAT Payable')
+        vat_payable.total_value = vat_payable.total_value + Decimal(tax_amount)
+        vat_payable.save()
+        TblCrJournalEntry.objects.create(journal_entry=journal, particulars=f"To VAT Payable", ledger=vat_payable, credit_amount=tax_amount)
     if discount_amount > 0:
         discount_expenses = AccountLedger.objects.get(ledger_name__iexact='Discount Expenses')
         TblDrJournalEntry.objects.create(particulars="Discount Expenses A/C Dr.", debit_amount = discount_amount, journal_entry=journal, ledger=discount_expenses)
@@ -194,6 +194,14 @@ def reverse_accounting(instance):
             vat_payable.total_value -= tax_amount
             vat_payable.save()
             TblDrJournalEntry.objects.create(ledger=vat_payable, particulars="Vat payable A\c Dr", debit_amount=tax_amount, journal_entry=journal)
+        
+        if discount_amount > 0:
+            dis_sales = AccountLedger.objects.get(ledger_name='Discount Sales')
+            dis_exp = AccountLedger.objects.get(ledger_name='Discount Expenses')
+            dis_sales.total_value -= discount_amount
+            dis_sales.save()
+            dis_exp.total_value -= discount_amount
+            dis_exp.save()
 
         if payment_mode == "cash":
             cash_ledger = AccountLedger.objects.get(ledger_name='Cash-In-Hand')
@@ -220,7 +228,7 @@ def reverse_accounting(instance):
             card_terminal_subledger = AccountSubLedger.objects.get(sub_ledger_name__iexact=f'Card Transactions {branch_and_terminal}')
             card_terminal_subledger.total_value -= grand_total
             card_terminal_subledger.save()
-            TblCrJournalEntry.objects.create(ledger=cash_ledger, particulars="To Card Transactions A\c", credit_amount=grand_total, journal_entry=journal)
+            TblCrJournalEntry.objects.create(ledger=card_ledger, particulars="To Card Transactions A\c", credit_amount=grand_total, journal_entry=journal)
 
         sale_terminal_subledger.total_value -= (grand_total-tax_amount)
         sale_terminal_subledger.save()

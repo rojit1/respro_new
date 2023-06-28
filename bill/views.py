@@ -27,7 +27,7 @@ from datetime import datetime, date
 
 
 from root.utils import DeleteMixin
-from user.permission import IsAccountantMixin, IsAdminMixin, BillFilterMixin
+from user.permission import IsAccountantMixin, IsAdminMixin, BillFilterMixin, IsAdminOrAccountingMixin
 from .models import Bill, BillItem, TablReturnEntry
 from .forms import BillForm, BillItemFormset
 from .resources import (
@@ -220,7 +220,7 @@ class ExportExcelMixin(BranchMixin):
         return wb, ws, row_num, font_style_normal, font_style_bold
 
 
-class BillMixin(IsAdminMixin):
+class BillMixin(IsAdminOrAccountingMixin):
     model = Bill
     form_class = BillForm
     paginate_by = 50
@@ -407,8 +407,12 @@ class MarkBillVoid(BillMixin, View):
             ServicedItem="Goods",
             quantity=quantity,
             reason=reason,
+            fiscal_year=bill.fiscal_year
         )
-        return_entry.save()
+        try:
+            return_entry.save()
+        except Exception as e:
+            print(e)
 
         return redirect(
             reverse_lazy("bill_detail", kwargs={"pk": self.kwargs.get("id")})
@@ -1538,7 +1542,7 @@ class TypeWiseSale(BillFilterDateMixin,ExportExcelMixin, ListView):
             for item in bill.bill_items.all():
                 product_title = item.product.title
                 items_list = data.get(item.product.type.title.lower().strip())
-                item_exists = list(filter(lambda x: x['name'] == product_title, items_list['items']))
+                item_exists = list(filter(lambda x: (x['name'] == product_title and x['rate'] == item.rate), items_list['items']))
                 if not item_exists:
                     items_list['items'].append({'name':product_title,'quantity':item.product_quantity, 'amount':item.amount, 'unit':item.unit_title, 'rate':item.rate})
                     items_list['amount_total'] += item.amount
@@ -1549,7 +1553,7 @@ class TypeWiseSale(BillFilterDateMixin,ExportExcelMixin, ListView):
                     items_list['amount_total'] += item.amount
                     items_list['quantity_total'] += item.product_quantity
         for k,v in data.items():
-            new_array = sorted(v['items'], key= lambda x:x['quantity'], reverse=True)
+            new_array = sorted(v['items'], key= lambda x:(x['name']), reverse=True)
             data[k]['items'] = new_array
         return data
         

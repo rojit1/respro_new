@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from openpyxl import load_workbook
 from organization.models import Branch, EndDayRecord
+from user.permission import IsAdminAccountingOrStoreKeeperMixin
 
 from django.urls import reverse_lazy
 from django.db.utils import IntegrityError
@@ -19,7 +20,7 @@ from .forms import ProductCategoryForm
 from django.contrib import messages
 from datetime import date, datetime
 
-class ProductCategoryMixin(IsAdminMixin):
+class ProductCategoryMixin():
     model = ProductCategory
     form_class = ProductCategoryForm
     paginate_by = 50
@@ -68,7 +69,7 @@ from .models import Product
 from .forms import ProductForm
 
 
-class ProductMixin(IsAdminMixin):
+class ProductMixin():
     model = Product
     form_class = ProductForm
     paginate_by = 50
@@ -185,7 +186,7 @@ from .models import CustomerProduct
 from .forms import CustomerProductForm
 
 
-class CustomerProductMixin(IsAdminMixin):
+class CustomerProductMixin():
     model = CustomerProduct
     form_class = CustomerProductForm
     paginate_by = 50
@@ -230,7 +231,7 @@ from .forms import ProductStockForm
 class ProductStockMixin:
     model = ProductStock
     form_class = ProductStockForm
-    paginate_by = 10
+    paginate_by = 20
     queryset = ProductStock.objects.filter(status=True,is_deleted=False)
     success_url = reverse_lazy('productstock_list')
 
@@ -254,7 +255,7 @@ class ProductStockDelete(ProductStockMixin, DeleteMixin, View):
 """  ----------------   """
 from .models import BranchStock, BranchStockTracking, ItemReconcilationApiItem
 from .forms import BranchStockForm
-class BranchStockMixin:
+class BranchStockMixin(IsAdminAccountingOrStoreKeeperMixin): 
     model = BranchStock
     form_class = BranchStockForm
     paginate_by = 10

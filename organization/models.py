@@ -2,6 +2,7 @@ from django.db import models
 from root.utils import BaseModel, SingletonModel
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+import datetime
 import environ
 env = environ.Env(DEBUG=(bool, False))
 
@@ -164,12 +165,14 @@ class EndDayDailyReport(BaseModel):
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True)
     terminal = models.CharField(max_length=10, null=True)
     total_sale = models.FloatField(default=0)
+    created_date = models.DateField(default=datetime.date.today, unique=True)
 
     def __str__(self):
         return 'Report'
     
     def save(self, *args, **kwargs):
         self.total_sale = self.net_sales + self.vat
+
         return super().save()
     
 

@@ -13,10 +13,12 @@ from user.models import Customer, User
 from user.permission import IsAdminMixin
 
 from .forms import OrganizationForm, StaticPageForm
-from .models import Organization, StaticPage
+from .models import Organization, StaticPage 
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.mixins import LoginRequiredMixin
 
-class IndexView(IsAdminMixin, TemplateView):
+class IndexView(LoginRequiredMixin, TemplateView):
+    login_url = '/login/'
     template_name = "index.html"
 
 
@@ -28,7 +30,7 @@ class OrganizationMixin(IsAdminMixin):
     success_url = reverse_lazy("org:organization_detail")
 
 
-class OrganizationDetail(OrganizationMixin, DetailView):
+class OrganizationDetail(DetailView):
     template_name = "organization/organization_detail.html"
 
     def get_object(self):
@@ -265,8 +267,8 @@ class MailRecipientDelete(MailRecipientMixin, DeleteMixin, View):
     pass
 
 
-class EndDayReportList(View):
-
+class EndDayReportList(ListView):
+    paginate_by = 5
     def get(self, request):
         reports = EndDayDailyReport.objects.all()
         return render(request, 'organization/end_day_report_list.html', {'object_list': reports})
