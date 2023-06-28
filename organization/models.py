@@ -165,14 +165,16 @@ class EndDayDailyReport(BaseModel):
     branch = models.ForeignKey(Branch, on_delete=models.SET_NULL, null=True)
     terminal = models.CharField(max_length=10, null=True)
     total_sale = models.FloatField(default=0)
-    created_date = models.DateField(default=datetime.date.today, unique=True)
+    created_date = models.DateField(default=datetime.date.today)
+
+    class Meta:
+        unique_together = 'created_date', 'branch'
 
     def __str__(self):
         return 'Report'
     
     def save(self, *args, **kwargs):
         self.total_sale = self.net_sales + self.vat
-
         return super().save()
     
 

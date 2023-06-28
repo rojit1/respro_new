@@ -26,7 +26,7 @@
                     data-kt-check-target="#kt_customers_table .form-check-input" value="1">
                 </div>
               </th>
-              <th class="min-w-125px sorting" tabindex="0" >Datetime</th>
+              <th class="min-w-125px sorting" tabindex="0" >Datetime(Client)</th>
               <th class="min-w-125px sorting" tabindex="0" >Total Sale</th>
               <th class="min-w-125px sorting" tabindex="0" >Net sale</th>
               <th class="min-w-125px sorting" tabindex="0" >Tax</th>
@@ -38,6 +38,8 @@
               <th class="min-w-125px sorting" tabindex="0" >Complimentary</th>
               <th class="min-w-125px sorting" tabindex="0" >Start Bill</th>
               <th class="min-w-125px sorting" tabindex="0" >End Bill</th>
+              <th class="min-w-125px sorting" tabindex="0" >Created Date</th>
+
             </tr>
             <!--end::Table row-->
           </thead>
@@ -64,8 +66,7 @@
                 <td>{{object.complimentary|floatformat:2}}</td>
                 <td>{{object.start_bill}}</td>
                 <td>{{object.end_bill}}</td>
-
-
+                <td>{{object.created_date}}</td>
 
              </tr>
              {%empty%}

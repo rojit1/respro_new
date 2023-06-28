@@ -270,5 +270,5 @@ class MailRecipientDelete(MailRecipientMixin, DeleteMixin, View):
 class EndDayReportList(ListView):
     paginate_by = 5
     def get(self, request):
-        reports = EndDayDailyReport.objects.all()
+        reports = EndDayDailyReport.objects.all().order_by('-created_at')
         return render(request, 'organization/end_day_report_list.html', {'object_list': reports})

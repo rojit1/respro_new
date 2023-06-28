@@ -1,6 +1,6 @@
 from django.shortcuts import redirect, render, get_object_or_404
 from openpyxl import load_workbook
-from organization.models import Branch, EndDayRecord
+from organization.models import Branch, EndDayRecord, EndDayDailyReport
 from user.permission import IsAdminAccountingOrStoreKeeperMixin
 
 from django.urls import reverse_lazy
@@ -487,13 +487,13 @@ class UpdateDateForReconcilationView(View):
             return redirect('/reconcile')
         
         api_item_exists = ItemReconcilationApiItem.objects.filter(date=to_date,branch=branch).exists()
-        endday_exists = EndDayRecord.objects.filter(date=to_date, branch=branch).exists()
+        endday_report_exists = EndDayDailyReport.objects.filter(created_date=to_date, branch=branch).exists()
 
-        if api_item_exists or endday_exists:
+        if api_item_exists or endday_report_exists:
             messages.error(request, 'Records in api item or end day record already exists')
             return redirect('/reconcile')
         branch = get_object_or_404(Branch, pk=branch)
         ItemReconcilationApiItem.objects.filter(date=from_date,branch=branch).update(date=to_date)
-        EndDayRecord.objects.filter(date=from_date, branch=branch).update(date=to_date)
+        EndDayDailyReport.objects.filter(created_date=from_date, branch=branch).update(created_date=to_date)
         messages.success(request, 'Date has been updated')
         return redirect('/reconcile')
